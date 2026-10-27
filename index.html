@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Course Planner Agent</title>
+<style>
+:root{--bg:#faf8f4;--card:#fff;--ink:#1f2328;--mute:#5d6570;--line:#e3ded4;--accent:#2f4f8a;--accent-ink:#fff;--warn:#fff4d6;--warn-ink:#6b4a00;--bad:#fde7e2;--bad-ink:#8a2d1c;--ok:#e3f1e8;--ok-ink:#1f4d33}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--card:#1f2226;--ink:#eceae5;--mute:#a1a8b0;--line:#33383e;--accent:#8fb0ee;--accent-ink:#0f1a30;--warn:#3a3112;--warn-ink:#f1d98a;--bad:#40201a;--bad-ink:#f4b4a6;--ok:#1e3328;--ok-ink:#a9dcbf}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px max(16px,env(safe-area-inset-left)) 64px max(16px,env(safe-area-inset-right))}
+main{max-width:760px;margin:0 auto}
+h1{font-size:1.7rem;margin:0 0 4px}h2{font-size:1.15rem;margin:0 0 4px}h3{font-size:1rem;margin:14px 0 6px}
+p{margin:0 0 12px}.mute{color:var(--mute);font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}
+.step{display:inline-block;background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.8rem;font-weight:700;padding:1px 10px;margin-right:6px}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:120px;resize:vertical}
+label.f{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 2fr 1fr;gap:10px;align-items:end}
+@media(max-width:560px){.grid,.grid4{grid-template-columns:1fr 1fr}}
+button{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;cursor:pointer;min-height:44px}
+button.primary,.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tabs{display:flex;gap:8px;margin:16px 0 0}.tabs button{flex:1}
+.hide{display:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 6px 4px 12px;font-size:.9rem}
+.chip button{min-height:26px;padding:0 8px;border-radius:99px;font-size:.85rem}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}.item button{min-height:34px;padding:2px 12px}
+.wk{border-top:1px solid var(--line);padding:10px 0}.wk:first-child{border-top:0}
+.wk .h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:600}
+.it{padding:2px 0 2px 12px}.it span{color:var(--mute)}
+.tag{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:99px;background:var(--ok);color:var(--ok-ink);font-weight:500}
+.tag.heavy{background:var(--bad);color:var(--bad-ink)}.tag.warn{background:var(--warn);color:var(--warn-ink)}
+.note{background:var(--warn);color:var(--warn-ink);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:.92rem}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.bar.load i{background:#c98a2b}.bar.load.heavy i{background:#c4452b}
+.stu{padding:10px 0;border-top:1px solid var(--line)}.stu:first-of-type{border-top:0}
+.stu .n{font-weight:600}
+.sts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.st{min-height:34px;padding:2px 10px;border-radius:8px;font-size:.85rem;border:1px solid var(--line);text-align:left}
+.st b{display:block;font-size:.72rem;font-weight:500;color:var(--mute)}
+.st.D{background:var(--ok);color:var(--ok-ink)}.st.L{background:var(--warn);color:var(--warn-ink)}.st.M{background:var(--bad);color:var(--bad-ink)}
+.st.D b,.st.L b,.st.M b{color:inherit}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sum div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:.9rem}
+.sum b{display:block;font-size:1.5rem}
+.as{margin:8px 0}.as .l{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:3px}
+.who{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.who .m{color:var(--mute);font-size:.88rem}
+</style></head><body>
+<main>
+<h1>Course Planner Agent</h1>
+<p class="mute">For professors and staff. This tool helps you do two things: <b>(1)</b> see which weeks of your semester are overloaded for students, and <b>(2)</b> see which students need a check-in, without tallying anything by hand. Everything runs in your browser, so nothing you type is uploaded or saved. The sample course and students below are made up.</p>
+
+<div class="tabs"><button class="on" id="t1">1. Plan my semester</button><button id="t2">2. Check class progress</button></div>
+
+<section id="p1">
+<div class="card">
+<h2><span class="step">Step 1</span>About your course</h2>
+<div class="grid">
+<div><label class="f" for="cn">Course name</label><input type="text" id="cn" value="BIO 110 (sample)"></div>
+<div><label class="f" for="sd">First Monday of the semester</label><input type="date" id="sd" value="2026-08-24"></div>
+</div>
+<label class="f" for="hd">Days with no class (holidays, breaks): pick a date and press Add</label>
+<div class="row" style="margin-top:0"><input type="date" id="hd" style="width:auto;flex:1"><button id="addh">Add</button></div>
+<div class="chips" id="hchips"></div>
+</div>
+
+<div class="card">
+<h2><span class="step">Step 2</span>Add your graded work</h2>
+<p class="mute">Add each quiz, paper, lab or exam one at a time. "Week" counts from the first Monday (Week 1 is the week that starts on it).</p>
+<div class="grid4">
+<div><label class="f" for="aw">Week</label><select id="aw"></select></div>
+<div><label class="f" for="ad">Due day</label><select id="ad"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option selected>Fri</option></select></div>
+<div><label class="f" for="an">Name</label><input type="text" id="an" placeholder="e.g. Quiz 4"></div>
+<div><label class="f" for="aq">Worth (% of grade)</label><input type="number" id="aq" min="0" max="100" placeholder="5"></div>
+</div>
+<div class="row"><button class="primary" id="adda">Add to my list</button><button id="clr">Clear the list</button><button id="smp">Reload sample</button></div>
+<div id="alist" style="margin-top:12px"></div>
+</div>
+
+<div id="o1"></div>
+</section>
+
+<section id="p2" class="hide">
+<div class="card">
+<h2><span class="step">Step 1</span>What has been due so far?</h2>
+<p class="mute">Type the names of the assignments that have already come due, separated by commas.</p>
+<input type="text" id="cols" value="Quiz 1, Lab 1, Quiz 2, Lab 2, Exam 1">
+<h2 style="margin-top:16px"><span class="step">Step 2</span>Who is in your class?</h2>
+<p class="mute">Type one student per line. Use names only if your institution allows it; initials or ID numbers also work. These names are made up.</p>
+<textarea id="names"></textarea>
+</div>
+<div class="card">
+<h2><span class="step">Step 3</span>Mark each student's work</h2>
+<p class="mute">Tap a button to switch it between <b>Done</b>, <b>Late</b> and <b>Missing</b>. The results below update right away.</p>
+<div id="roster"></div>
+<div class="row"><button id="rsp">Reload sample</button></div>
+</div>
+<div id="o2"></div>
+</section>
+
+<div class="card"><h3 style="margin-top:0">How to read the results</h3>
+<p class="mute"><b>Heavy week</b> means a large share of the grade (15% or more) or three or more items are due in the same week. <b>Reach out first</b> means a student has two or more missing assignments. <b>Keep an eye on</b> means one missing or two or more late. These are suggestions only; you decide what to move and who to contact. Use real student information only in line with your institution's privacy policy (FERPA).</p></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+const DAYS={Mon:0,Tue:1,Wed:2,Thu:3,Fri:4};
+const fmt=d=>d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+const fmtS=s=>{const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+for(let i=1;i<=18;i++){const o=el('option',null,String(i));o.value=i;$('aw').append(o)}
+$('aw').value=2;
+function tab(n){$('p1').classList.toggle('hide',n!=1);$('p2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
+$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+
+/* ---------- Tab 1 ---------- */
+const SAMPLE=[[2,'Fri','Quiz 1',5],[3,'Fri','Lab Report 1',5],[5,'Fri','Quiz 2',5],[6,'Fri','Lab Report 2',5],[8,'Thu','Exam 1',20],[9,'Fri','Lab Report 3',5],[10,'Fri','Quiz 3',5],[12,'Wed','Research Poster',10],[12,'Fri','Lab Report 4',5],[14,'Fri','Lab Report 5',5],[16,'Thu','Final Exam',30]];
+let items=SAMPLE.map(a=>({w:a[0],d:a[1],name:a[2],wt:a[3]}));
+let hols=['2026-09-07','2026-11-11','2026-11-26','2026-11-27'];
+function drawHols(){const c=$('hchips');c.innerHTML='';hols.sort().forEach((h,i)=>{const ch=el('span','chip',fmtS(h));const b=el('button',null,'Remove');b.onclick=()=>{hols.splice(hols.indexOf(h),1);draw()};ch.append(b);c.append(ch)})}
+$('addh').onclick=()=>{const v=$('hd').value;if(v&&!hols.includes(v)){hols.push(v);draw()}};
+$('adda').onclick=()=>{
+  const name=$('an').value.trim(),wt=parseFloat($('aq').value);
+  if(!name||isNaN(wt)){$('an').focus();return}
+  items.push({w:+$('aw').value,d:$('ad').value,name,wt});$('an').value='';$('aq').value='';draw();
+};
+$('clr').onclick=()=>{items=[];draw()};
+$('smp').onclick=()=>{items=SAMPLE.map(a=>({w:a[0],d:a[1],name:a[2],wt:a[3]}));draw()};
+['cn','sd'].forEach(i=>$(i).oninput=draw);
+function drawList(){
+  const l=$('alist');l.innerHTML='';
+  if(!items.length){l.append(el('p','mute','Nothing added yet. Fill in the boxes above and press "Add to my list".'));return}
+  [...items].sort((a,b)=>a.w-b.w||DAYS[a.d]-DAYS[b.d]).forEach(it=>{
+    const r=el('div','item');r.append(el('span',null,'Week '+it.w+' · '+it.d+' · '+it.name+' · '+it.wt+'%'));
+    const b=el('button',null,'Remove');b.onclick=()=>{items.splice(items.indexOf(it),1);draw()};r.append(b);l.append(r);
+  });
+}
+function draw(){drawHols();drawList();build()}
+function build(){
+  const o=$('o1');o.innerHTML='';
+  const p=$('sd').value.split('-').map(Number);
+  if(p.length!=3||!p[0]){o.append(el('div','note','Pick the first Monday of the semester in Step 1.'));return}
+  const start=new Date(p[0],p[1]-1,p[2]);
+  const card=el('div','card');
+  card.append(el('h2',null,$('cn').value+': your semester at a glance'));
+  if(!items.length){card.append(el('p','mute','Add graded work in Step 2 to see your schedule.'));o.append(card);return}
+  const total=items.reduce((s,i)=>s+i.wt,0);
+  card.append(el('p','mute',items.length+' graded items, adding up to '+total+'% of the grade'+(total!==100?'. That is not 100%, so check the percentages.':'.')));
+  const maxW=Math.max(...items.map(i=>i.w));
+  const heavy=[];const holHits=[];
+  const body=el('div');
+  for(let w=1;w<=maxW;w++){
+    const mon=new Date(start);mon.setDate(mon.getDate()+(w-1)*7);
+    const its=items.filter(i=>i.w===w).sort((a,b)=>DAYS[a.d]-DAYS[b.d]);
+    const load=its.reduce((s,i)=>s+i.wt,0),hv=load>=15||its.length>=3;
+    const div=el('div','wk'),h=el('div','h');
+    h.append(el('span',null,'Week '+w+' · starts '+fmt(mon)));
+    h.append(el('span','tag'+(hv?' heavy':''),its.length?(hv?'Heavy week · '+load+'% due':load+'% due'):'Nothing due'));
+    div.append(h);
+    if(its.length){const bar=el('div','bar load'+(hv?' heavy':'')),f=el('i');f.style.width=Math.min(100,load*100/30)+'%';bar.append(f);div.append(bar)}
+    its.forEach(i=>{
+      const dt=new Date(mon);dt.setDate(dt.getDate()+DAYS[i.d]);
+      const li=el('div','it',i.name+' ');li.append(el('span',null,'· due '+fmt(dt)+' · '+i.wt+'%'));
+      if(hols.includes(iso(dt))){li.append(document.createTextNode(' '),el('span','tag warn','no class that day'));holHits.push(i.name)}
+      div.append(li);
+    });
+    if(hv)heavy.push(w);body.append(div);
+  }
+  if(heavy.length)card.append(el('div','note','Heaviest weeks: '+heavy.join(', ')+'. Consider a small practice quiz or draft the week before, or moving one item a few days. Nothing here changes your syllabus.'));
+  if(holHits.length)card.append(el('div','note','Check these: '+holHits.join(', ')+' land'+(holHits.length==1?'s':'')+' on a day with no class.'));
+  if(!heavy.length&&!holHits.length)card.append(el('div','note','No heavy weeks or conflicts found.'));
+  card.append(body);o.append(card);
+}
+
+/* ---------- Tab 2 ---------- */
+const NAMES=['Maya Johnson','Liam Carter','Sofia Ramirez','Noah Williams','Ava Thompson','Ethan Nguyen','Isabel Martinez','Jackson Lee','Zoe Patel','Caleb Brooks','Hannah Kim','Marcus Davis'];
+const SD={'Maya Johnson':'DDDDD','Liam Carter':'DDDDD','Sofia Ramirez':'DDLDD','Noah Williams':'DMMMM','Ava Thompson':'DDDLD','Ethan Nguyen':'MMDMM','Isabel Martinez':'DDDDD','Jackson Lee':'DLLDD','Zoe Patel':'DDDDM','Caleb Brooks':'DDMMD','Hannah Kim':'DDDDD','Marcus Davis':'DDDDD'};
+let marks={};
+function loadSample(){$('cols').value='Quiz 1, Lab 1, Quiz 2, Lab 2, Exam 1';$('names').value=NAMES.join('\n');marks={};NAMES.forEach(n=>marks[n]=SD[n].split(''));drawRoster()}
+$('rsp').onclick=loadSample;
+$('cols').oninput=drawRoster;$('names').oninput=drawRoster;
+const LBL={D:'Done',L:'Late',M:'Missing'},NEXT={D:'L',L:'M',M:'D'};
+function cols(){return $('cols').value.split(',').map(s=>s.trim()).filter(Boolean)}
+function names(){return $('names').value.split('\n').map(s=>s.trim()).filter(Boolean)}
+function drawRoster(){
+  const cs=cols(),ns=names(),r=$('roster');r.innerHTML='';
+  if(!cs.length||!ns.length){r.append(el('p','mute','Fill in Steps 1 and 2 above to see your class here.'));analyze();return}
+  ns.forEach(n=>{
+    marks[n]=marks[n]||[];while(marks[n].length<cs.length)marks[n].push('D');
+    const d=el('div','stu');d.append(el('div','n',n));const s=el('div','sts');
+    cs.forEach((c,i)=>{const b=el('button','st '+marks[n][i]);b.append(document.createTextNode(c),el('b',null,LBL[marks[n][i]]));
+      b.onclick=()=>{marks[n][i]=NEXT[marks[n][i]];drawRoster()};s.append(b)});
+    d.append(s);r.append(d);
+  });
+  analyze();
+}
+function analyze(){
+  const o=$('o2');o.innerHTML='';
+  const cs=cols(),ns=names();if(!cs.length||!ns.length)return;
+  const info=ns.map(n=>{const v=marks[n].slice(0,cs.length);return{n,mn:cs.filter((_,i)=>v[i]==='M'),ln:cs.filter((_,i)=>v[i]==='L'),v}});
+  const first=info.filter(s=>s.mn.length>=2),watch=info.filter(s=>!first.includes(s)&&(s.mn.length===1||s.ln.length>=2));
+  const ok=ns.length-first.length-watch.length;
+  const comp=cs.map((c,i)=>({c,done:info.filter(s=>s.v[i]!=='M').length}));
+  const card=el('div','card');card.append(el('h2',null,'Your results: who to look at first'));
+  const sum=el('div','sum');
+  [[first.length,'reach out first'],[watch.length,'keep an eye on'],[ok,'on track']].forEach(a=>{const d=el('div');d.append(el('b',null,String(a[0])),document.createTextNode(a[1]));sum.append(d)});
+  card.append(sum);
+  const low=[...comp].sort((a,b)=>a.done-b.done)[0];
+  card.append(el('div','note','Lowest turn-in: '+low.c+' ('+low.done+' of '+ns.length+' students turned it in). If many students missed it, the directions or timing may be the issue, not only the students.'));
+  card.append(el('h3',null,'How many turned in each assignment'));
+  comp.forEach(c=>{const d=el('div','as'),l=el('div','l');l.append(el('span',null,c.c),el('span',null,Math.round(c.done*100/ns.length)+'%'));const b=el('div','bar'),f=el('i');f.style.width=(c.done*100/ns.length)+'%';b.append(f);d.append(l,b);card.append(d)});
+  function list(title,arr){
+    if(!arr.length)return;card.append(el('h3',null,title));
+    arr.forEach(s=>{const d=el('div','who');d.append(el('b',null,s.n));const m=[];if(s.mn.length)m.push('Missing: '+s.mn.join(', '));if(s.ln.length)m.push('Late: '+s.ln.join(', '));d.append(el('span','m',m.join(' · ')));card.append(d)});
+  }
+  list('Reach out first (2 or more missing)',first);
+  list('Keep an eye on (1 missing, or 2 or more late)',watch);
+  card.append(el('p','mute','The time you would spend collecting and tallying this can go to the conversation with the student instead.'));
+  o.append(card);
+}
+draw();loadSample();
+</script></body></html>
